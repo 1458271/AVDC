@@ -104,7 +104,7 @@ def getCover_small(htmlcode, count):
 
 def getCover(htmlcode):
     html = etree.fromstring(htmlcode, etree.HTMLParser())
-    result = str(html.xpath("//img[@class='video-cover']/@src")).strip(" ['']")
+    result = str(html.xpath("//img[@class='column-video-cover']/@src")).strip(" ['']")
     # 有时xpath找不到元素，所以要用bs4
     if not result:
         soup = BeautifulSoup(htmlcode, 'lxml', parse_only=SoupStrainer('img', {'class': 'video-cover'}))
@@ -115,7 +115,9 @@ def getCover(htmlcode):
 
 def getExtraFanart(htmlcode):  # 获取封面链接
     html = etree.fromstring(htmlcode, etree.HTMLParser())
-    extrafanart_list = html.xpath("//div[@class='message-body']/div[@class='tile-images preview-images']/a/@href")
+    # extrafanart_list = html.xpath("//div[@class='message-body']/div[@class='tile-images preview-images']/a/@href")
+    extrafanart_list = html.xpath("//div[@class='message-body']/div[@class='tile-images preview-images']"
+                                  "/a[@class='tile-item']/@href")
     return extrafanart_list
 
 
@@ -152,6 +154,7 @@ def getOutlineScore(number):  # 获取简介
     return outline, score
 
 
+# 普通影片
 def main(number, appoint_url, isuncensored=False):
     try:
         result_url = ''
@@ -239,6 +242,7 @@ def main(number, appoint_url, isuncensored=False):
     return js
 
 
+# 欧美影片
 def main_us(number, appoint_url):
     try:
         result_url = ''
@@ -250,6 +254,7 @@ def main_us(number, appoint_url):
             if str(htmlcode) == 'ProxyError':
                 raise TimeoutError
             html = etree.fromstring(htmlcode, etree.HTMLParser())  # //table/tr[1]/td[1]/text()
+            # counts保存当前的搜索结果数
             counts = len(html.xpath(
                 '//div[@id=\'videos\']/div[@class=\'grid columns\']/div[@class=\'grid-item column\']'))
             if counts == 0:
@@ -286,8 +291,7 @@ def main_us(number, appoint_url):
         number = getNumber(html_info)
         dic = {
             'actor': str(actor).strip(" [',']").replace('\'', ''),
-            'title': getTitle(html_info).replace('中文字幕', '').replace("\\n", '').replace('_', '-').replace(number,
-                                                                                                          '').strip(),
+            'title': getTitle(html_info).replace('中文字幕', '').replace("\\n", '').replace('_', '-').replace(number, '').strip(),
             'studio': getStudio(html_info),
             'publisher': getPublisher(html_info),
             'outline': '',
